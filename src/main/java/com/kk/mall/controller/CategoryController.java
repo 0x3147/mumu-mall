@@ -10,6 +10,7 @@ import com.kk.mall.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
@@ -23,18 +24,17 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping("/admin/category/add")
+    @PostMapping("admin/category/add")
     @ResponseBody
-    public ApiRestResponse addCategory(HttpSession session, AddCategoryReq addCategoryReq) {
-        if (addCategoryReq.getName() == null || addCategoryReq.getType() == null || addCategoryReq.getOrderNum() == null || addCategoryReq.getParentId() == null) {
-            return ApiRestResponse.error(ImoocMallExceptionEnum.NANE_NOT_NULL);
-        }
-        User currenctUser = (User) session.getAttribute(Constant.IMOOC_MALL_USER);
-        if (currenctUser == null) {
+    public ApiRestResponse addCategory(HttpSession session, @RequestBody AddCategoryReq addCategoryReq) {
+        User currentUser = (User) session.getAttribute(Constant.IMOOC_MALL_USER);
+        if (currentUser == null) {
             return ApiRestResponse.error(ImoocMallExceptionEnum.NEED_LOGIN);
         }
-        boolean adminRole = userService.checkAdminRole(currenctUser);
+        //校验是否是管理员
+        boolean adminRole = userService.checkAdminRole(currentUser);
         if (adminRole) {
+            //是管理员，执行操作
             categoryService.add(addCategoryReq);
             return ApiRestResponse.success();
         } else {
